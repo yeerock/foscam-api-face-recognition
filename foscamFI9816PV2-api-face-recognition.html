@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Foscam API Face Recognition</title>
+  <script src="face-api.js"></script>
+</head>
+<body>
+  <h1>Face Recognition</h1>
+  <div>
+    <canvas id="canvas" width="400" height="300"></canvas>
+  </div>
+  <div>
+    <h3>Enter Name:</h3>
+    <input type="text" id="nameInput">
+    <button onclick="saveFaceDescriptor()">Save</button>
+  </div>
+  <div>
+    <h3>Saved Name:</h3>
+    <p id="savedName"></p>
+    <h3>Face Descriptor:</h3>
+    <p id="savedDescriptor"></p>
+  </div>
+  <div>
+    <h3>Matched Name:</h3>
+    <p id="matchedName"></p>
+  </div>
+  <div>
+    <h3>Camera Settings:</h3>
+    <div>
+      <label for="ipInput">IP Address:</label>
+      <input type="text" id="ipInput" value="192.168.1.54">
+    </div>
+    <div>
+      <label for="portInput">Port:</label>
+      <input type="text" id="portInput" value="88">
+    </div>
+    <div>
+      <label for="usernameInput">Username:</label>
+      <input type="text" id="usernameInput" value="foscam">
+    </div>
+    <div>
+      <label for="passwordInput">Password:</label>
+      <input type="password" id="passwordInput" value="bigcow88">
+    </div>
+    <button onclick="saveCameraSettings()">Save Camera Info</button>
+  </div>
+  <div>
+    <h3>Saved Face Data:</h3>
+    <div id="savedData"></div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+    const nameInput = document.getElementById('nameInput');
+    const savedNameElement = document.getElementById('savedName');
+    const savedDescriptorElement = document.getElementById('savedDescriptor');
+    const matchedNameElement = document.getElementById('matchedName');
+    const ipInput = document.getElementById('ipInput');
+    const portInput = document.getElementById('portInput');
+    const usernameInput = document.getElementById('usernameInput');
+    const passwordInput = document.getElementById('passwordInput');
+
+    const cameraSettings = {
+      ip: ipInput.value,
+      port: portInput.value,
+      username: usernameInput.value,
+      password: passwordInput.value
+    };
+
+    let savedDescriptors = [];
+
+   async function detectFace() {
+  const imageUrl = `http://${cameraSettings.ip}:${cameraSettings.port}/cgi-bin/CGIProxy.fcgi?cmd=snapPicture2&usr=${cameraSettings.username}&pwd=${cameraSettings.password}`;
+  const timestamp = new Date().getTime();
+  const newImageUrl = `${imageUrl}&timestamp=${timestamp}`;
+
+  try {
+    const img = await faceapi.fetchImage(newImageUrl);
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    const detections = await faceapi.detectAllFaces(img).withFaceLandmarks().withFaceDescriptors();
+
+    if (detections.length > 0) {
+      const descriptor = detections[0].descriptor;
+      const name = nameInput.value;
+
+      savedNameElement.textContent = name;
+      savedDescriptorElement.textContent = JSON.stringify(descriptor);
+
+      const matches = savedDescriptors.map(({ descriptor: savedDescriptor, name }) => ({
+        label: name,
+        distance: faceapi.euclideanDistance(descriptor, savedDescriptor)
+      }));
+
+      const bestMatch = matches.reduce((acc, curr) => (curr.distance < acc.distance ? curr : acc), { distance: 1 });
+
+      if (bestMatch.distance < 0.6) {
+        matchedNameElement.textContent = bestMatch.label;
+      } else {
+        matchedNameElement.textContent = 'UNKNOWN FACE';
+      }
+    } else {
+      savedNameElement.textContent = '';
+      savedDescriptorElement.textContent = '';
+      matchedNameElement.textContent = 'NO FACE DETECTED';
+    }
+  } catch (error) {
+    console.error(error);
+  }
+  setTimeout(detectFace, 1000);
+}
+
+
+    async function saveFaceDescriptor() {
+      try {
+        const image = await faceapi.fetchImage(canvas.toDataURL());
+        const detections = await faceapi.detectAllFaces(image).withFaceLandmarks().withFaceDescriptors();
+
+        if (detections.length > 0) {
+          const descriptor = detections[0].descriptor;
+          const name = nameInput.value;
+
+          const existingEntryIndex = savedDescriptors.findIndex(entry => entry.name === name);
+
+          if (existingEntryIndex !== -1) {
+            savedDescriptors[existingEntryIndex].descriptor = descriptor;
+          } else {
+            savedDescriptors.push({ descriptor, name });
+          }
+
+          savedNameElement.textContent = name;
+          savedDescriptorElement.textContent = JSON.stringify(descriptor);
+
+          displaySavedFaceData();
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    function saveCameraSettings() {
+      cameraSettings.ip = ipInput.value;
+      cameraSettings.port = portInput.value;
+      cameraSettings.username = usernameInput.value;
+      cameraSettings.password = passwordInput.value;
+    }
+
+    function displaySavedFaceData() {
+      const savedDataElement = document.getElementById('savedData');
+      savedDataElement.innerHTML = '';
+
+      for (const { name, descriptor } of savedDescriptors) {
+        const descriptorElement = document.createElement('p');
+        descriptorElement.textContent = `${name}: ${JSON.stringify(descriptor)}`;
+        savedDataElement.appendChild(descriptorElement);
+      }
+    }
+
+    Promise.all([
+      faceapi.nets.ssdMobilenetv1.loadFromUri('models'),
+      faceapi.nets.faceLandmark68Net.loadFromUri('models'),
+      faceapi.nets.faceRecognitionNet.loadFromUri('models'),
+    ])
+      .then(() => {
+        displaySavedFaceData();
+        detectFace();
+      })
+      .catch(error => {
+        console.error('Failed to load face-api models:', error);
+      });
+  </script>
+</body>
+</html>
