@@ -22,10 +22,10 @@ Please ensure that you have a compatible Foscam FI9816V2 camera and the necessar
 Feel free to explore the live demo and experience the face recognition capabilities using face-api.js.
 
 **Author Information:**
-I am Leong Yee Rock, a dedicated hobbyist engineer, and the developer behind this application. I am proud to be a part of VYROX.com IoT, an esteemed research and development company specializing in IoT solutions.
+I am Leong Yee Rock, a dedicated hobbyist engineer, and the developer behind this application. I am proud to be a part of [VYROX IoT](https://vyrox.com), an esteemed research and development company specializing in IoT solutions.
 
 **Note:** It is important to be aware of potential security risks when running applications with disabled web security. Exercise caution and use this feature only for testing purposes.
 
-For any issues or further information, please refer to the [GitHub repository](https://github.com/your-repository-link) associated with this project.
+For any issues or further information, please contact me through [my page](https://vyrox.com/about.php) associated with this project.
 
 Happy face recognition!
