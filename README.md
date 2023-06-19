@@ -22,7 +22,7 @@ Please ensure that you have a compatible Foscam FI9816V2 camera and the necessar
 Feel free to explore the live demo and experience the face recognition capabilities using face-api.js.
 
 **Author Information:**
-This application is developed by Leong Yee Rock, a hobbyist software engineer. Leong Yee Rock works for VYROX.com IoT, an IoT solution R&D company.
+I am Leong Yee Rock, a dedicated hobbyist engineer, and the developer behind this application. I am proud to be a part of VYROX.com IoT, an esteemed research and development company specializing in IoT solutions.
 
 **Note:** It is important to be aware of potential security risks when running applications with disabled web security. Exercise caution and use this feature only for testing purposes.
 
