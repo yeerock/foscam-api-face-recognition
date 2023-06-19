@@ -26,6 +26,6 @@ I am Leong Yee Rock, a dedicated hobbyist engineer, and the developer behind thi
 
 **Note:** It is important to be aware of potential security risks when running applications with disabled web security. Exercise caution and use this feature only for testing purposes.
 
-For any issues or further information, please contact me through [my page](https://vyrox.com/about.php) associated with this project.
+For any issues or further information, please contact me through [my page](https://vyrox.com/about.php).
 
 Happy face recognition!
